@@ -41,3 +41,9 @@ const (
 	CN_PAWN_1 = "兵"
 	CN_PAWN_2 = "卒"
 )
+
+const (
+	ADDITIONAL_NULL = ""
+	ADDITIONAL_FRONT = "前"
+	ADDITIONAL_BACK = "后"
+)
