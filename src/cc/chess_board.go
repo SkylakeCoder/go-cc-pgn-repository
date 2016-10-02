@@ -6,6 +6,7 @@ import (
 	"strings"
 	"fmt"
 	"github.com/axgle/mahonia"
+	"os"
 )
 
 const (
@@ -71,6 +72,10 @@ func (cb *ChessBoard) Init() {
 	cb.chessInfo[6][8] = &Chess {Type:CHESS_PAWN, Color:COLOR_RED}
 }
 
+func (cb *ChessBoard) Reset() {
+	cb.Init()
+}
+
 func (cb *ChessBoard) ToBytes() []byte {
 	str := ""
 	for i := 0; i < BOARD_ROW; i++ {
@@ -104,7 +109,7 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 			if len(v) <= 3 {
 				continue
 			}
-			fmt.Printf("%s\n", v)
+			//fmt.Printf("%s\n", v)
 			if strings.Contains(v, CN_CAR) {
 				cb.moveCar(v, isRed)
 			} else if (strings.Contains(v, CN_HORSE)) {
@@ -125,11 +130,12 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 				cb.movePawn(v, isRed)
 			} else {
 				log.Fatalln("unknown chess type..." + v)
+				os.Exit(-1)
 			}
 			isRed = !isRed
 		}
 	}
-
+	fmt.Printf("[path done] %s", recordPath)
 	return true
 }
 
