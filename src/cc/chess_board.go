@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 	"fmt"
+	"github.com/axgle/mahonia"
 )
 
 const (
@@ -86,7 +87,8 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 		log.Fatalln("load record failed...")
 		return false
 	}
-	lines := strings.Split(string(record), "\n")
+	utf8Record := mahonia.NewDecoder("gbk").ConvertString(string(record))
+	lines := strings.Split(string(utf8Record), "\n")
 	lines[0] = ""
 	for _, line := range(lines) {
 		if line == "" {
