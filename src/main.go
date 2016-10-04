@@ -7,9 +7,12 @@ import (
 	"os"
 	"log"
 	"strings"
+	"server"
 )
 
-var chessRepositoryPath = flag.String("path", "", "useage: -path=xxx")
+var chessRepositoryPath = flag.String("path", "", "usage: -path=xxx")
+var host = flag.String("host", "localhost", "usage: -host=xxx")
+var port = flag.String("port", "8686", "usage: -port=xxx")
 
 func getAllPGNFiles(path string) []string {
 	result := []string {}
@@ -43,4 +46,6 @@ func main() {
 		cb.Reset()
 		cb.ParseRecord(path)
 	}
+
+	server.StartServer(*host, *port)
 }

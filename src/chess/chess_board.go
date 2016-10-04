@@ -135,7 +135,7 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 			isRed = !isRed
 		}
 	}
-	fmt.Printf("[path done] %s", recordPath)
+	log.Printf("[path done] %s\n", recordPath)
 	return true
 }
 
