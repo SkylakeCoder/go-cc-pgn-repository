@@ -1,8 +1,13 @@
-package cc
+package chess
 
 type ChessEnum byte
 type ChessColor byte
 type OpEnum string
+
+const (
+	BOARD_ROW int = 10
+	BOARD_COL = 9
+)
 
 const (
 	CHESS_NULL ChessEnum = iota

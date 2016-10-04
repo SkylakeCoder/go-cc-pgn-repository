@@ -1,7 +1,7 @@
 package main
 
 import (
-	"cc"
+	"chess"
 	"flag"
 	"path/filepath"
 	"os"
@@ -36,7 +36,7 @@ func main() {
 	if *chessRepositoryPath == "" {
 		flag.Usage()
 	}
-	cb := cc.ChessBoard{}
+	cb := chess.ChessBoard{}
 	cb.Init()
 	files := getAllPGNFiles(*chessRepositoryPath)
 	for _, path := range files {

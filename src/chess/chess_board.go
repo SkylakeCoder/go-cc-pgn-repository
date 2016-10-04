@@ -1,4 +1,4 @@
-package cc
+package chess
 
 import (
 	"io/ioutil"
@@ -9,13 +9,13 @@ import (
 	"os"
 )
 
-const (
-	BOARD_ROW int = 10
-	BOARD_COL = 9
-)
-
 type ChessBoard struct {
 	chessInfo [][]*Chess
+}
+
+type Point struct {
+	X int
+	Y int
 }
 
 func (cb *ChessBoard) Init() {
