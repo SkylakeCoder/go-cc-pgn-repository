@@ -254,32 +254,59 @@ func (cb *ChessBoard) getChessRowByCol(chessType ChessEnum, chessColor ChessColo
 		// eg: 象７退５. two elephants all in col 7...
 		opEnum := OpEnum(op)
 		if chessColor == COLOR_RED {
-			if opEnum == OP_BACKWARD || opEnum == OP_HORIZONTAL {
+			if chessType != CHESS_CANNON {
+				if opEnum == OP_BACKWARD || opEnum == OP_HORIZONTAL {
+					for row := 0; row < BOARD_ROW; row++ {
+						chess := cb.chessInfo[row][chessCol]
+						if chess.Type == chessType && chess.Color == chessColor {
+							return row, void
+						}
+					}
+				} else if opEnum == OP_FORWARD {
+					for row := BOARD_ROW - 1; row >= 0; row-- {
+						chess := cb.chessInfo[row][chessCol]
+						if chess.Type == chessType && chess.Color == chessColor {
+							return row, void
+						}
+					}
+				}
+			} else {
+				// cannon is special..
+				// dirty fix(1010)... two cannons in the same column but record is confused.
+				rows := []int{}
 				for row := 0; row < BOARD_ROW; row++ {
 					chess := cb.chessInfo[row][chessCol]
 					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
+						rows = append(rows, row)
 					}
 				}
-			} else if opEnum == OP_FORWARD {
-				for row := BOARD_ROW - 1; row >= 0; row-- {
-					chess := cb.chessInfo[row][chessCol]
-					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
-					}
+				if len(rows) == 1 {
+					return rows[0], void
+				} else if len(rows) > 1 {
+					return rows[0], rows[1]
 				}
 			}
 		} else if chessColor == COLOR_BLACK {
-			if opEnum == OP_BACKWARD {
-				for row := BOARD_ROW - 1; row >= 0; row-- {
-					chess := cb.chessInfo[row][chessCol]
-					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
+			if chessType != CHESS_CANNON {
+				if opEnum == OP_BACKWARD {
+					for row := BOARD_ROW - 1; row >= 0; row-- {
+						chess := cb.chessInfo[row][chessCol]
+						if chess.Type == chessType && chess.Color == chessColor {
+							return row, void
+						}
+					}
+				} else if opEnum == OP_FORWARD || opEnum == OP_HORIZONTAL {
+					for row := 0; row < BOARD_ROW; row++ {
+						chess := cb.chessInfo[row][chessCol]
+						if chess.Type == chessType && chess.Color == chessColor {
+							return row, void
+						}
 					}
 				}
-			} else if opEnum == OP_FORWARD || opEnum == OP_HORIZONTAL {
-				// dirty fix(1009)... two cannons in the same column but record is confused.
-				rows := []int {}
+			} else {
+				// cannon is special...
+				// dirty fix(1010)... two cannons in the same column but record is confused.
+				rows := []int{}
 				for row := 0; row < BOARD_ROW; row++ {
 					chess := cb.chessInfo[row][chessCol]
 					if chess.Type == chessType && chess.Color == chessColor {
@@ -682,6 +709,74 @@ func (cb *ChessBoard) moveHorse(record string, isRed bool) {
 	}
 }
 
+func (cb *ChessBoard) checkCannonMovement(color ChessColor, oldRow, oldCol, newRow, newCol int, op string) bool {
+	targetChess := cb.chessInfo[newRow][newCol]
+	if targetChess.Color == color {
+		return false
+	}
+	eat := false
+	if targetChess.Type != CHESS_NULL {
+		eat = true
+	}
+	chessCount := 0
+	switch OpEnum(op) {
+	case OP_HORIZONTAL: {
+		startCol, endCol := 0, 0
+		if oldCol < newCol {
+			startCol = oldCol + 1
+			endCol = newCol
+		} else {
+			startCol = newCol + 1
+			endCol = oldCol
+		}
+		for i := startCol; i < endCol; i++ {
+			if cb.chessInfo[oldRow][i].Type != CHESS_NULL {
+				chessCount++
+			}
+		}
+	}
+	case OP_FORWARD:
+		fallthrough
+	case OP_BACKWARD: {
+		startRow, endRow := 0, 0
+		if oldRow < newRow {
+			startRow = oldRow + 1
+			endRow = newRow
+		} else {
+			startRow = newRow + 1
+			endRow = oldRow
+		}
+		for i := startRow; i < endRow; i++ {
+			if cb.chessInfo[i][oldCol].Type != CHESS_NULL {
+				chessCount++
+			}
+		}
+	}
+	default:
+		log.Fatalln("invalid cannon operation...")
+	}
+	if eat {
+		if chessCount != 1 {
+			return false
+		}
+	} else {
+		if chessCount != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func (cb *ChessBoard) isRowColValid(row, col int) bool {
+	if row < 0 || row >= BOARD_ROW {
+		return false
+	}
+	if col < 0 || col >= BOARD_COL {
+		return false
+	}
+	return true
+}
+
 func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 	additional, from, op, to := cb.getRecordKey(record)
 	if isRed {
@@ -690,12 +785,21 @@ func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 		switch OpEnum(op) {
 		case OP_HORIZONTAL: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
-			oldRow, _ := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
+			oldRow, oldRow2 := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
 			newRow := oldRow
 			newCol := cb.getChessCol(chessType, chessColor, to)
 
-			oldChess := cb.chessInfo[oldRow][oldCol]
-			newChess := cb.chessInfo[newRow][newCol]
+			var oldChess, newChess *Chess
+
+			if !cb.isRowColValid(newRow, newCol) || !cb.checkCannonMovement(chessColor, oldRow, oldCol, newRow, newCol, op) {
+				newRow := oldRow2
+				newCol := cb.getChessCol(chessType, chessColor, to)
+				oldChess = cb.chessInfo[oldRow2][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			} else {
+				oldChess = cb.chessInfo[oldRow][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			}
 
 			oldChess.Type = CHESS_NULL
 			oldChess.Color = COLOR_NULL
@@ -704,13 +808,22 @@ func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 		}
 		case OP_FORWARD: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
-			oldRow, _ := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
+			oldRow, oldRow2 := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
 			forwardRow := cb.convertCNDigitToENDigit(chessColor, to)
 			newRow := oldRow - forwardRow
 			newCol := oldCol
 
-			oldChess := cb.chessInfo[oldRow][oldCol]
-			newChess := cb.chessInfo[newRow][newCol]
+			var oldChess, newChess *Chess
+
+			if !cb.isRowColValid(newRow, newCol) || !cb.checkCannonMovement(chessColor, oldRow, oldCol, newRow, newCol, op) {
+				newRow = oldRow2 - forwardRow
+				newCol = oldCol
+				oldChess = cb.chessInfo[oldRow2][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			} else {
+				oldChess = cb.chessInfo[oldRow][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			}
 
 			oldChess.Type = CHESS_NULL
 			oldChess.Color = COLOR_NULL
@@ -719,13 +832,22 @@ func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 		}
 		case OP_BACKWARD: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
-			oldRow, _ := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
+			oldRow, oldRow2 := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
 			forwardRow := cb.convertCNDigitToENDigit(chessColor, to)
 			newRow := oldRow + forwardRow
 			newCol := oldCol
 
-			oldChess := cb.chessInfo[oldRow][oldCol]
-			newChess := cb.chessInfo[newRow][newCol]
+			var oldChess, newChess *Chess
+
+			if !cb.isRowColValid(newRow, newCol) || !cb.checkCannonMovement(chessColor, oldRow, oldCol, newRow, newCol, op) {
+				newRow = oldRow2 + forwardRow
+				newCol = oldCol
+				oldChess = cb.chessInfo[oldRow2][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			} else {
+				oldChess = cb.chessInfo[oldRow][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			}
 
 			oldChess.Type = CHESS_NULL
 			oldChess.Color = COLOR_NULL
@@ -741,12 +863,21 @@ func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 		switch OpEnum(op) {
 		case OP_HORIZONTAL: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
-			oldRow, _ := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
+			oldRow, oldRow2 := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
 			newRow := oldRow
 			newCol := cb.getChessCol(chessType, chessColor, to)
 
-			oldChess := cb.chessInfo[oldRow][oldCol]
-			newChess := cb.chessInfo[newRow][newCol]
+			var oldChess, newChess *Chess
+
+			if !cb.isRowColValid(newRow, newCol) || !cb.checkCannonMovement(chessColor, oldRow, oldCol, newRow, newCol, op) {
+				newRow := oldRow2
+				newCol := cb.getChessCol(chessType, chessColor, to)
+				oldChess = cb.chessInfo[oldRow2][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			} else {
+				oldChess = cb.chessInfo[oldRow][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			}
 
 			oldChess.Type = CHESS_NULL
 			oldChess.Color = COLOR_NULL
@@ -755,19 +886,21 @@ func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 		}
 		case OP_FORWARD: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
-			// dirty fix(1009): oldRow2......chinese chess record is confused...
+			// dirty fix: oldRow2......chinese chess record is confused...
 			oldRow, oldRow2 := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
 			forwardRow := cb.convertCNDigitToENDigit(chessColor, to)
 			newRow := oldRow + forwardRow
 			newCol := oldCol
 
-			oldChess := cb.chessInfo[oldRow][oldCol]
-			newChess := cb.chessInfo[newRow][newCol]
-			// dirty fix(1009 see above...).
-			if newChess.Color == COLOR_BLACK {
+			var oldChess, newChess *Chess
+
+			if !cb.isRowColValid(newRow, newCol) || !cb.checkCannonMovement(chessColor, oldRow, oldCol, newRow, newCol, op) {
 				newRow = oldRow2 + forwardRow
 				newCol = oldCol
 				oldChess = cb.chessInfo[oldRow2][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			} else {
+				oldChess = cb.chessInfo[oldRow][oldCol]
 				newChess = cb.chessInfo[newRow][newCol]
 			}
 
@@ -778,13 +911,22 @@ func (cb *ChessBoard) moveCannon(record string, isRed bool) {
 		}
 		case OP_BACKWARD: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
-			oldRow, _ := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
+			oldRow, oldRow2 := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
 			forwardRow := cb.convertCNDigitToENDigit(chessColor, to)
 			newRow := oldRow - forwardRow
 			newCol := oldCol
 
-			oldChess := cb.chessInfo[oldRow][oldCol]
-			newChess := cb.chessInfo[newRow][newCol]
+			var oldChess, newChess *Chess
+
+			if !cb.isRowColValid(newRow, newCol) || !cb.checkCannonMovement(chessColor, oldRow, oldCol, newRow, newCol, op) {
+				newRow = oldRow2 - forwardRow
+				newCol = oldCol
+				oldChess = cb.chessInfo[oldRow2][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			} else {
+				oldChess = cb.chessInfo[oldRow][oldCol]
+				newChess = cb.chessInfo[newRow][newCol]
+			}
 
 			oldChess.Type = CHESS_NULL
 			oldChess.Color = COLOR_NULL
