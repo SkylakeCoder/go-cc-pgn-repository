@@ -97,12 +97,24 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 	utf8Record := mahonia.NewDecoder("gbk").ConvertString(string(record))
 	lines := strings.Split(string(utf8Record), "\n")
 	lines[0] = ""
+	commentOpen := false
 	for _, line := range(lines) {
 		if line == "" {
 			continue
 		}
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "[") {
+			continue
+		}
+		if strings.HasPrefix(line, "{") {
+			commentOpen = true
+			continue
+		}
+		if strings.HasPrefix(line, "}") {
+			commentOpen = false
+			continue
+		}
+		if commentOpen {
 			continue
 		}
 		splitList := strings.Split(line, " ")
