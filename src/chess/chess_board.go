@@ -19,6 +19,8 @@ type Point struct {
 	Y int
 }
 
+var debugFlag = true
+
 func (cb *ChessBoard) Init() {
 	cb.chessInfo = [][]*Chess {}
 	for i := 0; i < BOARD_ROW; i++ {
@@ -124,7 +126,10 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 				continue
 			}
 			key := cb.ToString()
-			// log.Printf("%s\n", v)
+			if debugFlag {
+				fmt.Println("---------------------------------------")
+				fmt.Printf("%s\n", v)
+			}
 			if strings.Contains(v, CN_CAR) {
 				cb.moveCar(v, isRed)
 			} else if (strings.Contains(v, CN_HORSE)) {
@@ -147,7 +152,11 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 				log.Fatalln("unknown chess type..." + v)
 				os.Exit(-1)
 			}
-			// cb.DumpForDebug()
+			if debugFlag {
+				cb.DumpForDebug()
+				fmt.Println("---------------------------------------")
+				fmt.Println("")
+			}
 			isRed = !isRed
 			value := cb.ToString()
 			repository.Record(key, value)
@@ -161,49 +170,52 @@ func (cb *ChessBoard) DumpForDebug() {
 	for row := 0; row < BOARD_ROW; row++ {
 		for col := 0; col < BOARD_COL; col++ {
 			chess := cb.chessInfo[row][col]
-			strColor := ""
-			if chess.Color == COLOR_RED {
-				strColor = "红"
+			if chess.Type == CHESS_NULL {
+				fmt.Print("　　 ")
 			} else {
-				strColor = "黑"
-			}
-			strChessName := ""
-			switch ChessEnum(chess.Type) {
-			case CHESS_CAR:
-				strChessName = CN_CAR
-			case CHESS_HORSE:
-				strChessName = CN_HORSE
-			case CHESS_CANNON:
-				strChessName = CN_CANNON
-			case CHESS_ELEPHANT:
+				strColor := ""
 				if chess.Color == COLOR_RED {
-					strChessName = CN_ELEPHANT_1
+					strColor = "红"
 				} else {
-					strChessName = CN_ELEPHANT_2
+					strColor = "黑"
 				}
-			case CHESS_GUARD:
-				if chess.Color == COLOR_RED {
-					strChessName = CN_GUARD_1
-				} else {
-					strChessName = CN_GUARD_2
+				strChessName := ""
+				switch ChessEnum(chess.Type) {
+				case CHESS_CAR:
+					strChessName = CN_CAR
+				case CHESS_HORSE:
+					strChessName = CN_HORSE
+				case CHESS_CANNON:
+					strChessName = CN_CANNON
+				case CHESS_ELEPHANT:
+					if chess.Color == COLOR_RED {
+						strChessName = CN_ELEPHANT_1
+					} else {
+						strChessName = CN_ELEPHANT_2
+					}
+				case CHESS_GUARD:
+					if chess.Color == COLOR_RED {
+						strChessName = CN_GUARD_1
+					} else {
+						strChessName = CN_GUARD_2
+					}
+				case CHESS_KING:
+					if chess.Color == COLOR_RED {
+						strChessName = CN_KING_1
+					} else {
+						strChessName = CN_KING_2
+					}
+				case CHESS_PAWN:
+					if chess.Color == COLOR_RED {
+						strChessName = CN_PAWN_1
+					} else {
+						strChessName = CN_PAWN_2
+					}
 				}
-			case CHESS_KING:
-				if chess.Color == COLOR_RED {
-					strChessName = CN_KING_1
-				} else {
-					strChessName = CN_KING_2
-				}
-			case CHESS_PAWN:
-				if chess.Color == COLOR_RED {
-					strChessName = CN_PAWN_1
-				} else {
-					strChessName = CN_PAWN_2
-				}
-			}
-			if strChessName != "" {
-				fmt.Printf("[%d, %d] %s\n", row, col, strColor + strChessName)
+				fmt.Print(strColor + strChessName + " ")
 			}
 		}
+		fmt.Println("\n")
 	}
 }
 
