@@ -43,9 +43,14 @@ func main() {
 	cb := chess.ChessBoard{}
 	cb.Init()
 	files := getAllPGNFiles(*chessRepositoryPath)
+	totalCount := len(files)
+	index := 1
 	for _, path := range files {
+		log.Printf("current: %s\n", path)
 		cb.Reset()
 		cb.ParseRecord(path)
+		log.Printf("[%d/%d]\n", index, totalCount)
+		index++
 	}
 	repository.Save()
 	repository.StartServer(*host, *port)
