@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/axgle/mahonia"
 	"os"
+	"repository"
 )
 
 type ChessBoard struct {
@@ -76,14 +77,14 @@ func (cb *ChessBoard) Reset() {
 	cb.Init()
 }
 
-func (cb *ChessBoard) ToBytes() []byte {
+func (cb *ChessBoard) ToString() string {
 	str := ""
 	for i := 0; i < BOARD_ROW; i++ {
 		for j := 0; j < BOARD_COL; j++ {
 			str += cb.chessInfo[i][j].String()
 		}
 	}
-	return []byte(str)
+	return str
 }
 
 func (cb *ChessBoard) ParseRecord(recordPath string) bool {
@@ -109,6 +110,7 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 			if len(v) <= 3 {
 				continue
 			}
+			key := cb.ToString()
 			//fmt.Printf("%s\n", v)
 			if strings.Contains(v, CN_CAR) {
 				cb.moveCar(v, isRed)
@@ -133,6 +135,8 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 				os.Exit(-1)
 			}
 			isRed = !isRed
+			value := cb.ToString()
+			repository.Record(key, value)
 		}
 	}
 	log.Printf("[path done] %s\n", recordPath)

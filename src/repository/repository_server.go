@@ -1,4 +1,4 @@
-package server
+package repository
 
 import (
 	"log"
@@ -14,5 +14,7 @@ func StartServer(host string, port string) {
 func handleRequest(resp http.ResponseWriter, req *http.Request) {
 	log.Printf("request coming...")
 	resp.Header().Set("Access-Control-Allow-Origin", "*")
-	resp.Write([]byte("hello..."))
+	chessBoard := req.FormValue("chess")
+	result := Search(chessBoard)
+	resp.Write([]byte(result))
 }

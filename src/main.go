@@ -7,7 +7,7 @@ import (
 	"os"
 	"log"
 	"strings"
-	"server"
+	"repository"
 )
 
 var chessRepositoryPath = flag.String("path", "", "usage: -path=xxx")
@@ -39,6 +39,7 @@ func main() {
 	if *chessRepositoryPath == "" {
 		flag.Usage()
 	}
+	repository.Init()
 	cb := chess.ChessBoard{}
 	cb.Init()
 	files := getAllPGNFiles(*chessRepositoryPath)
@@ -46,6 +47,6 @@ func main() {
 		cb.Reset()
 		cb.ParseRecord(path)
 	}
-
-	server.StartServer(*host, *port)
+	repository.Save()
+	repository.StartServer(*host, *port)
 }
