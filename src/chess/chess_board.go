@@ -100,6 +100,7 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 	lines := strings.Split(string(utf8Record), "\n")
 	lines[0] = ""
 	commentOpen := false
+	isRed := true
 	for _, line := range(lines) {
 		if line == "" {
 			continue
@@ -119,17 +120,22 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 		if commentOpen {
 			continue
 		}
-
-		lineLen := 0
-		for _, _ = range line {
-			lineLen++
+		if false {
+			lineLen := 0
+			for _, _ = range line {
+				lineLen++
+			}
+			if lineLen < 8 {
+				continue
+			}
 		}
-		if lineLen < 8 {
+		if (!strings.Contains(line, string(OP_HORIZONTAL)) &&
+			!strings.Contains(line, string(OP_FORWARD)) &&
+			!strings.Contains(line, string(OP_BACKWARD))) {
 			continue
 		}
 
 		splitList := strings.Split(line, " ")
-		isRed := true
 		for _, v := range splitList {
 			if len(v) <= 3 {
 				continue
