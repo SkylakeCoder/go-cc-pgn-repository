@@ -20,6 +20,7 @@ type Point struct {
 }
 
 func (cb *ChessBoard) Init() {
+	cb.chessInfo = [][]*Chess {}
 	for i := 0; i < BOARD_ROW; i++ {
 		row := []*Chess {}
 		for j := 0; j < BOARD_COL; j++ {
@@ -111,7 +112,7 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 				continue
 			}
 			key := cb.ToString()
-			//fmt.Printf("%s\n", v)
+			// log.Printf("%s\n", v)
 			if strings.Contains(v, CN_CAR) {
 				cb.moveCar(v, isRed)
 			} else if (strings.Contains(v, CN_HORSE)) {
@@ -134,65 +135,63 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 				log.Fatalln("unknown chess type..." + v)
 				os.Exit(-1)
 			}
+			// cb.DumpForDebug()
 			isRed = !isRed
 			value := cb.ToString()
 			repository.Record(key, value)
 		}
 	}
-	log.Printf("[path done] %s\n", recordPath)
+	// log.Printf("[path done] %s\n", recordPath)
 	return true
 }
 
-func (cb *ChessBoard) Dump() {
+func (cb *ChessBoard) DumpForDebug() {
 	for row := 0; row < BOARD_ROW; row++ {
 		for col := 0; col < BOARD_COL; col++ {
 			chess := cb.chessInfo[row][col]
-			if chess.Type == CHESS_NULL {
-				fmt.Print(" ")
+			strColor := ""
+			if chess.Color == COLOR_RED {
+				strColor = "红"
 			} else {
-				strColor := ""
+				strColor = "黑"
+			}
+			strChessName := ""
+			switch ChessEnum(chess.Type) {
+			case CHESS_CAR:
+				strChessName = CN_CAR
+			case CHESS_HORSE:
+				strChessName = CN_HORSE
+			case CHESS_CANNON:
+				strChessName = CN_CANNON
+			case CHESS_ELEPHANT:
 				if chess.Color == COLOR_RED {
-					strColor = "(R)"
+					strChessName = CN_ELEPHANT_1
 				} else {
-					strColor = "(B)"
+					strChessName = CN_ELEPHANT_2
 				}
-				strChessName := ""
-				switch ChessEnum(chess.Type) {
-				case CHESS_CAR:
-					strChessName = CN_CAR
-				case CHESS_HORSE:
-					strChessName = CN_HORSE
-				case CHESS_CANNON:
-					strChessName = CN_CANNON
-				case CHESS_ELEPHANT:
-					if chess.Color == COLOR_RED {
-						strChessName = CN_ELEPHANT_1
-					} else {
-						strChessName = CN_ELEPHANT_2
-					}
-				case CHESS_GUARD:
-					if chess.Color == COLOR_RED {
-						strChessName = CN_GUARD_1
-					} else {
-						strChessName = CN_GUARD_2
-					}
-				case CHESS_KING:
-					if chess.Color == COLOR_RED {
-						strChessName = CN_KING_1
-					} else {
-						strChessName = CN_KING_2
-					}
-				case CHESS_PAWN:
-					if chess.Color == COLOR_RED {
-						strChessName = CN_PAWN_1
-					} else {
-						strChessName = CN_PAWN_2
-					}
+			case CHESS_GUARD:
+				if chess.Color == COLOR_RED {
+					strChessName = CN_GUARD_1
+				} else {
+					strChessName = CN_GUARD_2
 				}
-				fmt.Print(strColor + strChessName)
+			case CHESS_KING:
+				if chess.Color == COLOR_RED {
+					strChessName = CN_KING_1
+				} else {
+					strChessName = CN_KING_2
+				}
+			case CHESS_PAWN:
+				if chess.Color == COLOR_RED {
+					strChessName = CN_PAWN_1
+				} else {
+					strChessName = CN_PAWN_2
+				}
+			}
+			if strChessName != "" {
+				fmt.Printf("[%d, %d] %s\n", row, col, strColor + strChessName)
 			}
 		}
-		fmt.Println()
 	}
 }
 
@@ -203,7 +202,7 @@ func (cb *ChessBoard) getRecordKey(record string) (additional, from, op, to stri
 	}
 	firstChar := utf8Chars[0]
 	if firstChar == ADDITIONAL_FRONT ||
-				firstChar == ADDITIONAL_BACK {
+			firstChar == ADDITIONAL_BACK {
 		additional = firstChar
 		op = utf8Chars[2]
 		to = utf8Chars[3]
@@ -293,7 +292,7 @@ func (cb *ChessBoard) getChessRowByCol(chessType ChessEnum, chessColor ChessColo
 			}
 		}
 	}
-
+	cb.DumpForDebug()
 	log.Fatalln("[ChessBoard::getChessRowByCol] can't find target chess...")
 	return -1
 }
@@ -372,7 +371,7 @@ func (cb *ChessBoard) getChessCol(chessType ChessEnum, chessColor ChessColor, po
 }
 
 func (cb *ChessBoard) convertCNDigitToENDigit(chessColor ChessColor, cnDigit string) int {
-		if chessColor == COLOR_RED {
+	if chessColor == COLOR_RED {
 		switch cnDigit {
 		case "一":
 			return 1
@@ -512,8 +511,8 @@ func (cb *ChessBoard) moveCar(record string, isRed bool) {
 		case OP_BACKWARD: {
 			oldCol := cb.getChessCol(chessType, chessColor, from)
 			oldRow := cb.getChessRowByCol(chessType, chessColor, oldCol, op, additional)
-			forwardRow := cb.convertCNDigitToENDigit(chessColor, to)
-			newRow := oldRow - forwardRow
+			backwardRow := cb.convertCNDigitToENDigit(chessColor, to)
+			newRow := oldRow - backwardRow
 			newCol := oldCol
 
 			oldChess := cb.chessInfo[oldRow][oldCol]
