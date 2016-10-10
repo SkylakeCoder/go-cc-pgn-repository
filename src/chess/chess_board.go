@@ -19,7 +19,7 @@ type Point struct {
 	Y int
 }
 
-var debugFlag = false
+var debugFlag = true
 
 func (cb *ChessBoard) Init() {
 	cb.chessInfo = [][]*Chess {}
@@ -120,24 +120,13 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 		if commentOpen {
 			continue
 		}
-		if false {
-			lineLen := 0
-			for _, _ = range line {
-				lineLen++
-			}
-			if lineLen < 8 {
-				continue
-			}
-		}
-		if (!strings.Contains(line, string(OP_HORIZONTAL)) &&
-			!strings.Contains(line, string(OP_FORWARD)) &&
-			!strings.Contains(line, string(OP_BACKWARD))) {
+		if !cb.isValidRecord(line) {
 			continue
 		}
 
 		splitList := strings.Split(line, " ")
 		for _, v := range splitList {
-			if len(v) <= 3 {
+			if !cb.isValidRecord(v) {
 				continue
 			}
 			key := cb.ToString()
@@ -232,6 +221,15 @@ func (cb *ChessBoard) DumpForDebug() {
 		}
 		fmt.Println("\n")
 	}
+}
+
+func (cb *ChessBoard) isValidRecord(record string) bool {
+	if (!strings.Contains(record, string(OP_HORIZONTAL)) &&
+		!strings.Contains(record, string(OP_FORWARD)) &&
+		!strings.Contains(record, string(OP_BACKWARD))) {
+		return false
+	}
+	return true
 }
 
 func (cb *ChessBoard) getRecordKey(record string) (additional, from, op, to string) {
