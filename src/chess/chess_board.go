@@ -327,40 +327,32 @@ func (cb *ChessBoard) getChessRowByCol(chessType ChessEnum, chessColor ChessColo
 	} else if additional == ADDITIONAL_FRONT {
 		if chessColor == COLOR_RED {
 			for row := 0; row < BOARD_ROW; row++ {
-				for col := 0; col < BOARD_COL; col++ {
-					chess := cb.chessInfo[row][col]
-					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
-					}
+				chess := cb.chessInfo[row][chessCol]
+				if chess.Type == chessType && chess.Color == chessColor {
+					return row, void
 				}
 			}
 		} else if chessColor == COLOR_BLACK {
 			for row := BOARD_ROW - 1; row >= 0; row-- {
-				for col := 0; col < BOARD_COL; col++ {
-					chess := cb.chessInfo[row][col]
-					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
-					}
+				chess := cb.chessInfo[row][chessCol]
+				if chess.Type == chessType && chess.Color == chessColor {
+					return row, void
 				}
 			}
 		}
 	} else if additional == ADDITIONAL_BACK {
 		if chessColor == COLOR_RED {
 			for row := BOARD_ROW - 1; row >= 0; row-- {
-				for col := 0; col < BOARD_COL; col++ {
-					chess := cb.chessInfo[row][col]
-					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
-					}
+				chess := cb.chessInfo[row][chessCol]
+				if chess.Type == chessType && chess.Color == chessColor {
+					return row, void
 				}
 			}
 		} else if chessColor == COLOR_BLACK {
 			for row := 0; row < BOARD_ROW; row++ {
-				for col := 0; col < BOARD_COL; col++ {
-					chess := cb.chessInfo[row][col]
-					if chess.Type == chessType && chess.Color == chessColor {
-						return row, void
-					}
+				chess := cb.chessInfo[row][chessCol]
+				if chess.Type == chessType && chess.Color == chessColor {
+					return row, void
 				}
 			}
 		}
