@@ -19,7 +19,7 @@ type Point struct {
 	Y int
 }
 
-var debugFlag = true
+var debugFlag = false
 
 func (cb *ChessBoard) Init() {
 	cb.chessInfo = [][]*Chess {}
