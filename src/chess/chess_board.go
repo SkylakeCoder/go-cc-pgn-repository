@@ -19,7 +19,7 @@ type Point struct {
 	Y int
 }
 
-var debugFlag = false
+var debugFlag = true
 
 func (cb *ChessBoard) Init() {
 	cb.chessInfo = [][]*Chess {}
@@ -246,7 +246,8 @@ func (cb *ChessBoard) getRecordKey(record string) (additional, from, op, to stri
 	}
 	firstChar := utf8Chars[0]
 	if firstChar == ADDITIONAL_FRONT ||
-			firstChar == ADDITIONAL_BACK {
+			firstChar == ADDITIONAL_BACK ||
+			firstChar == ADDITIONAL_MIDDLE {
 		additional = firstChar
 		op = utf8Chars[2]
 		to = utf8Chars[3]
@@ -363,6 +364,17 @@ func (cb *ChessBoard) getChessRowByCol(chessType ChessEnum, chessColor ChessColo
 				}
 			}
 		}
+	} else if additional == ADDITIONAL_MIDDLE {
+		count := 0
+		for row := 0; row < BOARD_ROW; row++ {
+			chess := cb.chessInfo[row][chessCol]
+			if chess.Type == chessType && chess.Color == chessColor {
+				count++
+				if count == 2 {
+					return row, void
+				}
+			}
+		}
 	}
 	cb.DumpForDebug()
 	log.Fatalln("[ChessBoard::getChessRowByCol] can't find target chess...")
@@ -376,7 +388,7 @@ func (cb *ChessBoard) getSpecialChessCol(chessType ChessEnum, chessColor ChessCo
 			chess := cb.chessInfo[row][col]
 			if chess.Type == chessType && chess.Color == chessColor {
 				count++
-				if count == 2 {
+				if count >= 2 {
 					return col
 				}
 			}
