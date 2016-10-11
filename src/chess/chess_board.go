@@ -19,7 +19,7 @@ type Point struct {
 	Y int
 }
 
-var debugFlag = true
+var debugFlag = false
 
 func (cb *ChessBoard) Init() {
 	cb.chessInfo = [][]*Chess {}
@@ -111,6 +111,9 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 		}
 		if strings.HasPrefix(line, "{") {
 			commentOpen = true
+			if strings.Contains(line, "}") {
+				commentOpen = false
+			}
 			continue
 		}
 		if strings.HasPrefix(line, "}") {
