@@ -117,6 +117,10 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 			commentOpen = false
 			continue
 		}
+		if commentOpen && strings.Contains(line, "}") {
+			commentOpen = false
+			continue
+		}
 		if commentOpen {
 			continue
 		}
