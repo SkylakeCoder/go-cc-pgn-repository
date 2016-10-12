@@ -18,6 +18,16 @@ func Init() {
 	}
 }
 
+func Load(path string) {
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatalln("read db file failed...")
+		os.Exit(-1)
+	}
+	json.Unmarshal(bytes, &db)
+	log.Println("db file loaded success!")
+}
+
 func Record(key string, value string) {
 	_, ok := db[key]
 	if !ok {

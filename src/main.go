@@ -11,6 +11,7 @@ import (
 )
 
 var chessRepositoryPath = flag.String("path", "", "usage: -path=xxx")
+var dbPath = flag.String("dbpath", "", "usage: -dbpath=xxx")
 var host = flag.String("host", "localhost", "usage: -host=xxx")
 var port = flag.String("port", "8686", "usage: -port=xxx")
 
@@ -35,23 +36,29 @@ func getAllPGNFiles(path string) []string {
 }
 
 func main() {
-	flag.Parse()
-	if *chessRepositoryPath == "" {
-		flag.Usage()
-	}
 	repository.Init()
-	cb := chess.ChessBoard{}
-	cb.Init()
-	files := getAllPGNFiles(*chessRepositoryPath)
-	totalCount := len(files)
-	index := 1
-	for _, path := range files {
-		log.Printf("current: %s\n", path)
-		cb.Reset()
-		cb.ParseRecord(path)
-		log.Printf("[%d/%d]\n", index, totalCount)
-		index++
+
+	flag.Parse()
+	if (*dbPath != "") {
+		repository.Load(*dbPath)
+	} else {
+		if *chessRepositoryPath == "" {
+			flag.Usage()
+		}
+		cb := chess.ChessBoard{}
+		cb.Init()
+		files := getAllPGNFiles(*chessRepositoryPath)
+		totalCount := len(files)
+		index := 1
+		for _, path := range files {
+			log.Printf("current: %s\n", path)
+			cb.Reset()
+			cb.ParseRecord(path)
+			log.Printf("[%d/%d]\n", index, totalCount)
+			index++
+		}
+		repository.Save()
 	}
-	repository.Save()
+
 	repository.StartServer(*host, *port)
 }
