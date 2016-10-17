@@ -1,7 +1,6 @@
 package main
 
 import (
-	"chess"
 	"flag"
 	"path/filepath"
 	"os"
@@ -45,7 +44,7 @@ func main() {
 		if *chessRepositoryPath == "" {
 			flag.Usage()
 		}
-		cb := chess.ChessBoard{}
+		cb := repository.ChessBoard{}
 		cb.Init()
 		files := getAllPGNFiles(*chessRepositoryPath)
 		totalCount := len(files)

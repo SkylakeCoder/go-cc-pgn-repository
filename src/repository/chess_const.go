@@ -1,4 +1,4 @@
-package chess
+package repository
 
 type ChessEnum byte
 type ChessColor byte

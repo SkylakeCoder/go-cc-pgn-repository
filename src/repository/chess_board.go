@@ -1,4 +1,4 @@
-package chess
+package repository
 
 import (
 	"io/ioutil"
@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/axgle/mahonia"
 	"os"
-	"repository"
 )
 
 type ChessBoard struct {
@@ -170,7 +169,7 @@ func (cb *ChessBoard) ParseRecord(recordPath string) bool {
 			}
 			isRed = !isRed
 			value := cb.ToString()
-			repository.Record(key, value)
+			Record(key, value)
 		}
 	}
 	// log.Printf("[path done] %s\n", recordPath)

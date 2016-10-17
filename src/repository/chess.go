@@ -1,4 +1,4 @@
-package chess
+package repository
 
 import "fmt"
 
