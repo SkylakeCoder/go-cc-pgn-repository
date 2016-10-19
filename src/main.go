@@ -12,7 +12,7 @@ import (
 var chessRepositoryPath = flag.String("path", "", "usage: -path=xxx")
 var dbPath = flag.String("dbpath", "", "usage: -dbpath=xxx")
 var host = flag.String("host", "localhost", "usage: -host=xxx")
-var port = flag.String("port", "8686", "usage: -port=xxx")
+var port = flag.String("port", "8688", "usage: -port=xxx")
 
 func getAllPGNFiles(path string) []string {
 	result := []string {}
