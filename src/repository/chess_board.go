@@ -21,58 +21,26 @@ type Point struct {
 var debugFlag = false
 
 func (cb *ChessBoard) Init() {
-	cb.chessInfo = [][]*Chess {}
-	for i := 0; i < BOARD_ROW; i++ {
-		row := []*Chess {}
-		for j := 0; j < BOARD_COL; j++ {
-			chess := &Chess {
-				Type:CHESS_NULL,
-				Color:COLOR_NULL,
-			}
-			row = append(row, chess)
-		}
-		cb.chessInfo = append(cb.chessInfo, row)
+	initBoard := [][]byte {
+		{ 2, 1, 2, 2, 2, 4, 2, 5, 2, 6, 2, 5, 2, 4, 2, 2, 2, 1 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0 },
+		{ 2, 7, 0, 0, 2, 7, 0, 0, 2, 7, 0, 0, 2, 7, 0, 0, 2, 7 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 1, 7, 0, 0, 1, 7, 0, 0, 1, 7, 0, 0, 1, 7, 0, 0, 1, 7 },
+		{ 0, 0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0 },
+		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+		{ 1, 1, 1, 2, 1, 4, 1, 5, 1, 6, 1, 5, 1, 4, 1, 2, 1, 1 },
 	}
-
-	// Black.
-	cb.chessInfo[0][0] = &Chess {Type:CHESS_CAR, Color:COLOR_BLACK}
-	cb.chessInfo[0][1] = &Chess {Type:CHESS_HORSE, Color:COLOR_BLACK}
-	cb.chessInfo[0][2] = &Chess {Type:CHESS_ELEPHANT, Color:COLOR_BLACK}
-	cb.chessInfo[0][3] = &Chess {Type:CHESS_GUARD, Color:COLOR_BLACK}
-	cb.chessInfo[0][4] = &Chess {Type:CHESS_KING, Color:COLOR_BLACK}
-	cb.chessInfo[0][5] = &Chess {Type:CHESS_GUARD, Color:COLOR_BLACK}
-	cb.chessInfo[0][6] = &Chess {Type:CHESS_ELEPHANT, Color:COLOR_BLACK}
-	cb.chessInfo[0][7] = &Chess {Type:CHESS_HORSE, Color:COLOR_BLACK}
-	cb.chessInfo[0][8] = &Chess {Type:CHESS_CAR, Color:COLOR_BLACK}
-
-	cb.chessInfo[2][1] = &Chess {Type:CHESS_CANNON, Color:COLOR_BLACK}
-	cb.chessInfo[2][7] = &Chess {Type:CHESS_CANNON, Color:COLOR_BLACK}
-
-	cb.chessInfo[3][0] = &Chess {Type:CHESS_PAWN, Color:COLOR_BLACK}
-	cb.chessInfo[3][2] = &Chess {Type:CHESS_PAWN, Color:COLOR_BLACK}
-	cb.chessInfo[3][4] = &Chess {Type:CHESS_PAWN, Color:COLOR_BLACK}
-	cb.chessInfo[3][6] = &Chess {Type:CHESS_PAWN, Color:COLOR_BLACK}
-	cb.chessInfo[3][8] = &Chess {Type:CHESS_PAWN, Color:COLOR_BLACK}
-
-	// Red.
-	cb.chessInfo[9][0] = &Chess {Type:CHESS_CAR, Color:COLOR_RED}
-	cb.chessInfo[9][1] = &Chess {Type:CHESS_HORSE, Color:COLOR_RED}
-	cb.chessInfo[9][2] = &Chess {Type:CHESS_ELEPHANT, Color:COLOR_RED}
-	cb.chessInfo[9][3] = &Chess {Type:CHESS_GUARD, Color:COLOR_RED}
-	cb.chessInfo[9][4] = &Chess {Type:CHESS_KING, Color:COLOR_RED}
-	cb.chessInfo[9][5] = &Chess {Type:CHESS_GUARD, Color:COLOR_RED}
-	cb.chessInfo[9][6] = &Chess {Type:CHESS_ELEPHANT, Color:COLOR_RED}
-	cb.chessInfo[9][7] = &Chess {Type:CHESS_HORSE, Color:COLOR_RED}
-	cb.chessInfo[9][8] = &Chess {Type:CHESS_CAR, Color:COLOR_RED}
-
-	cb.chessInfo[7][1] = &Chess {Type:CHESS_CANNON, Color:COLOR_RED}
-	cb.chessInfo[7][7] = &Chess {Type:CHESS_CANNON, Color:COLOR_RED}
-
-	cb.chessInfo[6][0] = &Chess {Type:CHESS_PAWN, Color:COLOR_RED}
-	cb.chessInfo[6][2] = &Chess {Type:CHESS_PAWN, Color:COLOR_RED}
-	cb.chessInfo[6][4] = &Chess {Type:CHESS_PAWN, Color:COLOR_RED}
-	cb.chessInfo[6][6] = &Chess {Type:CHESS_PAWN, Color:COLOR_RED}
-	cb.chessInfo[6][8] = &Chess {Type:CHESS_PAWN, Color:COLOR_RED}
+	cb.chessInfo = [][]*Chess{}
+	for row := 0; row < BOARD_ROW; row++ {
+		cols := []*Chess{}
+		for col := 0; col < BOARD_COL * 2; col+=2 {
+			cols = append(cols, &Chess{ Type: ChessEnum(initBoard[row][col + 1]), Color: ChessColor(initBoard[row][col]) })
+		}
+		cb.chessInfo = append(cb.chessInfo, cols)
+	}
 }
 
 func (cb *ChessBoard) Reset() {
